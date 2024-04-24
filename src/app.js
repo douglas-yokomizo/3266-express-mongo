@@ -1,20 +1,18 @@
 import express from "express";
+import dbConnect from "./config/dbConnect.js";
+
+const connection = await dbConnect();
+
+connection.on("error", (error) => {
+  console.error(`Erro ao conectar no MongoDB: ${error}`);
+});
+
+connection.once("open", () => {
+  console.log("Conexão estabelecida com sucesso");
+});
 
 const app = express();
 app.use(express.json());
-
-const livros = [
-  {
-    id: 1,
-    titulo: "O Senhor dos Anéis",
-    autor: "J. R. R. Tolkien",
-  },
-  {
-    id: 2,
-    titulo: "O Hobbit",
-    autor: "J. R. R. Tolkien",
-  },
-];
 
 const buscarLivroPorId = (id) => {
   return livros.findIndex((livro) => livro.id === +id);
@@ -43,6 +41,12 @@ app.put("/livros/:id", (req, res) => {
   const index = buscarLivroPorId(req.params.id);
   livros[index].titulo = req.body.titulo;
   res.status(200).json(livros);
+});
+
+app.delete("/livros/:id", (req, res) => {
+  const index = buscarLivroPorId(req.params.id);
+  livros.splice(index, 1);
+  res.status(200).send("Livro removido com sucesso");
 });
 
 export default app;
